@@ -2,6 +2,7 @@ bin/
 res/docs/
 res/roms/
 .*
+!/.vscode
 !/.gitignore
 
 ./_dependencies_where_installed

@@ -101,6 +101,7 @@ int main()
                                    ;
         joypad.push_key_states(keys_mask);
 
+        // Make screenshots using F
         static bool triggered = false;
              if (keyboard_state[SDL_SCANCODE_F]) triggered = true;
         else if (triggered)
