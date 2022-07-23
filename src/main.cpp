@@ -75,10 +75,6 @@ int main()
             printf("stdin: '%s' %d\n", buf, buf[0]);
         }
         // ]]
-        const Uint32 current_time = ::SDL_GetTicks();
-        acc_update_time += current_time - previous_time;
-
-        previous_time = current_time;
 
         ::SDL_PumpEvents();
 
@@ -117,7 +113,15 @@ int main()
             triggered = false;
         }
 
-        for (; acc_update_time >= seconds_per_update; acc_update_time -= seconds_per_update)
+        // MAIN SYSTEM STATE UPDATE LOOP
+        const Uint32 current_time = ::SDL_GetTicks();
+        acc_update_time += current_time - previous_time;
+        previous_time = current_time;
+        // update the system for the actual elapsed amount of time ... 
+        // TODO ?! this assumes that each instruction takes 1 cycle/the same amount of cycles no?
+        //
+        // TODO this bad updating strategy explains why we have bands across the scrren when walking right!
+        /*for (; acc_update_time >= seconds_per_update; acc_update_time -= seconds_per_update)
         {
             static unsigned i = 0;
             while (i < insts_per_update)
@@ -132,12 +136,30 @@ int main()
                 cpu.request_interrupts(interrupts);
             }
             i -= insts_per_update;
+        }*/
+
+        // just execute random amount of instructions,
+        // almost as good... (except we have no idea about the SDL timing...)
+        // but at least like this, the tearing will be less consistent/inconsistent...
+        // we will be redrawing the screen a ton of times...
+        for (int i = 0; i < 300; i++) {
+                const unsigned cycles = cpu.next_step(mmu); i += cycles;
+                dma.tick(cycles);
+
+                unsigned interrupts = 0;
+                interrupts      |= timer.tick(cycles);
+                interrupts      |=   gpu.tick(cycles);
+
+                cpu.request_interrupts(interrupts);
         }
+
+        // display current pixels
         Uint32* pixels;
         int pitch;
 
         ::SDL_LockTexture(texture, nullptr, reinterpret_cast<void**>(&pixels), &pitch);
 
+        // translate all pixels (2 bits per pixel, value 0-3) to grayscale rgb 0 to 255 (0xff)
         for (int i = 0; i < 160 * 144; ++i)
         {
             const unsigned px = 0xFF * (3 - gpu.get_framebuffer_pixel(i)) / 3;
