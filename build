@@ -1,0 +1,31 @@
+#!/bin/bash
+. ./bash_lib
+
+echo "building..."
+
+# dependencies
+# inspired by https://github.com/LibVNC/libvncserver/blob/master/.travis.yml
+# and cmake messages about missing png/jpeg libs...
+# as well as various possible crypto libraries, though it is probably far
+# preferable to handle encryption and authorization through tunneling 
+# on a separate layer!
+if ! test -f ./_dependencies_where_installed ; then
+    sudo apt-get update
+    sudo apt-get --assume-yes \
+        --no-install-suggests \
+        --no-install-recommends \
+        install \
+            libsdl2-dev
+    touch _dependencies_where_installed
+fi
+
+
+(
+# build steps from ORIGINAL.README.md, except mkdir -p so that build existing is not a problem [[
+mkdir -p bin
+make
+# ]]
+)
+
+
+echo "built."

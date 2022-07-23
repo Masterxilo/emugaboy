@@ -3,3 +3,6 @@ res/docs/
 res/roms/
 .*
 !/.gitignore
+
+./_dependencies_where_installed
+./roms

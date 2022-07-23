@@ -1,0 +1,12 @@
+#!/bin/bash
+. ./bash_lib
+
+./build
+
+mkdir -p ./res/roms
+#md5db-get d9d957771484ef846d4e8d241f6f2815 > ./roms/d9d957771484ef846d4e8d241f6f2815.wario.rom.gb
+
+md5db-get b259feb41811c7e4e1dc200167985c84 > ./res/roms/SuperMarioLand.gb
+# currently, the filename it runs is hardcoded!
+./bin/emulator
+
