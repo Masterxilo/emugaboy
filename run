@@ -1,6 +1,7 @@
 #!/bin/bash
 . ./bash_lib
 
+killall emulator
 ./build
 
 mkdir -p ./res/roms

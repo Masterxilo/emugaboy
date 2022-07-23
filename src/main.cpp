@@ -9,6 +9,23 @@
 #include <SDL2/SDL.h>
 
 #include <fstream>
+#include <iostream>
+#include <fcntl.h>
+#include <unistd.h>
+
+void my_atexit() {
+    printf("my_atexit FIRES!\n");
+}
+
+static int SDLCALL my_event_filter(void *userdata, SDL_Event * event)
+{
+    if (event->type == SDL_QUIT) {
+        printf("SDL_QUIT received!\n");
+        // hard exit
+        exit(0);
+    }
+    return 1;  // let all events be added to the queue since we always return 1.
+}
 
 int main()
 {
@@ -40,8 +57,24 @@ int main()
     constexpr unsigned seconds_per_update = 1000 / 60, insts_per_update = 1048576 / 60;
     unsigned acc_update_time = 0;
     Uint32 previous_time = ::SDL_GetTicks();
+
+    // optional nonblocking STDIN [[
+    fcntl(0, F_SETFL, fcntl(0, F_GETFL) | O_NONBLOCK);
+    //]]
+    // exitable [[
+    atexit(my_atexit);
+    SDL_SetEventFilter(my_event_filter, nullptr);
+    // ]]
+
     for (bool running = true; running;)
     {
+        // optional nonblocking STDIN [[
+        char buf[200];
+        int numRead = read(0, buf, sizeof(buf));
+        if (numRead > 0) {
+            printf("stdin: '%s' %d\n", buf, buf[0]);
+        }
+        // ]]
         const Uint32 current_time = ::SDL_GetTicks();
         acc_update_time += current_time - previous_time;
 
