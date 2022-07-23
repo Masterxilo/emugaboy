@@ -83,16 +83,22 @@ int main()
         ::SDL_PumpEvents();
 
         const Uint8* const keyboard_state = ::SDL_GetKeyboardState(nullptr);
+
+        // quit using esc
         if (keyboard_state[SDL_SCANCODE_ESCAPE])
             running = false;
-        const unsigned keys_mask = keyboard_state[SDL_SCANCODE_D] << 0 |
+
+        // keyboard control/button states
+        const unsigned keys_mask = keyboard_state[SDL_SCANCODE_D] << 0 | // arrows = WASD
                                    keyboard_state[SDL_SCANCODE_A] << 1 |
                                    keyboard_state[SDL_SCANCODE_W] << 2 |
                                    keyboard_state[SDL_SCANCODE_S] << 3 |
-                                   keyboard_state[SDL_SCANCODE_E] << 4 |
-                                   keyboard_state[SDL_SCANCODE_Q] << 5 |
-                                   keyboard_state[SDL_SCANCODE_X] << 6 |
-                                   keyboard_state[SDL_SCANCODE_Z] << 7;
+
+                                   keyboard_state[SDL_SCANCODE_J] << 4 | // ab
+                                   keyboard_state[SDL_SCANCODE_I] << 5 | // ab
+                                   keyboard_state[SDL_SCANCODE_E] << 6 | // select/start
+                                   keyboard_state[SDL_SCANCODE_Q] << 7 // select/start
+                                   ;
         joypad.push_key_states(keys_mask);
 
         static bool triggered = false;
