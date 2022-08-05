@@ -1,7 +1,7 @@
 #!/bin/bash
 . ./bash_lib
 
-killall emulator
+killall emulator || true
 ./build
 
 mkdir -p ./res/roms
