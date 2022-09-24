@@ -1,9 +1,11 @@
 bin/
 res/docs/
-res/roms/
+#res/roms/
 .*
 !/.vscode
 !/.gitignore
 
 ./_dependencies_where_installed
-./roms
+#./roms
+
+SDL2-devel-2.24.0-mingw*

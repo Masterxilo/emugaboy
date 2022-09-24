@@ -7,6 +7,7 @@
 #include "gameboy/emulator/timer.h"
 
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_main.h>
 
 #include <fstream>
 #include <iostream>
@@ -27,9 +28,14 @@ static int SDLCALL my_event_filter(void *userdata, SDL_Event * event)
     return 1;  // let all events be added to the queue since we always return 1.
 }
 
-int main()
+#ifdef __cplusplus
+extern "C"
+#endif
+int main(int argc, char *argv[])
 {
+    printf("emugaboy starts, loading cartridge...\n");
     auto cartridge{gameboy::emulator::Cartridge::load("res/roms/SuperMarioLand.gb")};
+    printf("cartridge loaded.\n");
     gameboy::emulator::CPU cpu;
     gameboy::emulator::GPU gpu;
     unsigned char wram[0x2000], hram[0x7F];
@@ -59,7 +65,9 @@ int main()
     Uint32 previous_time = ::SDL_GetTicks();
 
     // optional nonblocking STDIN [[
+#ifndef _WIN32
     fcntl(0, F_SETFL, fcntl(0, F_GETFL) | O_NONBLOCK);
+#endif
     //]]
     // exitable [[
     atexit(my_atexit);
@@ -69,16 +77,22 @@ int main()
     for (bool running = true; running;)
     {
         // optional nonblocking STDIN [[
+#ifndef _WIN32
         char buf[200];
         int numRead = read(0, buf, sizeof(buf));
         if (numRead > 0) {
             printf("stdin: '%s' %d\n", buf, buf[0]);
         }
+#endif
         // ]]
 
         ::SDL_PumpEvents();
 
         const Uint8* const keyboard_state = ::SDL_GetKeyboardState(nullptr);
+        for (int i = 0; i < 128; i++) {
+            //putc(keyboard_state[i] ? 'x' : '.', stdout);
+        }
+        //printf("\n");
 
         // quit using esc
         if (keyboard_state[SDL_SCANCODE_ESCAPE])
@@ -90,11 +104,14 @@ int main()
                                    keyboard_state[SDL_SCANCODE_W] << 2 |
                                    keyboard_state[SDL_SCANCODE_S] << 3 |
 
+                                    // note: did not use backspace/enter but these keys!!!
                                    keyboard_state[SDL_SCANCODE_J] << 4 | // ab
                                    keyboard_state[SDL_SCANCODE_I] << 5 | // ab
                                    keyboard_state[SDL_SCANCODE_E] << 6 | // select/start
                                    keyboard_state[SDL_SCANCODE_Q] << 7 // select/start
                                    ;
+        
+        //printf("keys_mask = %#02x\n", keys_mask);
         joypad.push_key_states(keys_mask);
 
         // Make screenshots using F
@@ -142,7 +159,7 @@ int main()
         // almost as good... (except we have no idea about the SDL timing...)
         // but at least like this, the tearing will be less consistent/inconsistent...
         // we will be redrawing the screen a ton of times...
-        for (int i = 0; i < 300; i++) {
+        for (int i = 0; i < 600 /* 300 */; i++) {
                 const unsigned cycles = cpu.next_step(mmu); i += cycles;
                 dma.tick(cycles);
 
